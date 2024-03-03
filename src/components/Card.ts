@@ -1,6 +1,7 @@
 import { Component } from './base/Component';
 import { ICardItem } from '../types';
 import { bem, createElement, ensureElement } from '../utils/utils';
+import { categoryMap } from '../utils/constants';
 // import clsx from "clsx";
 
 interface ICardActions {
@@ -61,6 +62,7 @@ export class Card extends Component<ICardItem> {
 
 	set category(value: string) {
 		this.setText(this._category, value);
+		this.toggleClass(this._category, categoryMap.get(value), true);
 	}
 
 	get category(): string {
