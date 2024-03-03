@@ -5,29 +5,36 @@ export type Category =
 	| 'кнопка'
 	| 'хард-скил';
 
-export interface IProductItem {
+export interface ICardItem {
 	id: string;
-	description?: string;
-	image: string;
 	title: string;
-	category: Category;
-	price: string | null;
+	description?: string;
+	image?: string;
+	category?: Category;
+	price: number | null;
+	// deleteCard:(id: string) => void;
+	// addCard: (id: string) => void;
 }
 
-export type IBasketItem = Pick<IProductItem, 'id' | 'title' | 'price'>;
-
-export interface IProductList {
+export interface ICardList {
 	total: number;
-	items: IProductItem[];
+	items: ICardItem[];
 }
 
-export interface IOrderForm {
+export type IBasketItem = Pick<ICardItem, 'id' | 'title' | 'price'>;
+
+export interface IBasket {
+	items: IBasketItem[];
+	total: number;
+}
+
+export interface IOrderContacts {
 	email: string;
 	phone: string;
 }
 
-export interface IOrder extends IOrderForm {
-	payment: string;
+export interface IOrder extends IOrderContacts {
+	payment: 'online' | 'offline';
 	address: string;
 	total: number;
 	items: string[];
@@ -36,4 +43,13 @@ export interface IOrder extends IOrderForm {
 export interface IOrderResult {
 	id: string;
 	total: number;
+}
+
+export type FormErrors = Partial<Record<keyof IOrder, string>>;
+
+export interface IAppState {
+	basket: string[];
+	catalog: ICardItem[];
+	preview: string | null;
+	order: IOrder | null;
 }
