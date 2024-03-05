@@ -94,24 +94,7 @@ export class AppState extends Model<IAppState> {
     preview: string | null;
     formErrors: FormErrors = {};
 
-    // toggleOrderedLot(id: string, isIncluded: boolean) {
-    //     if (isIncluded) {
-    //         this.order.items = _.uniq([...this.order.items, id]);
-    //     } else {
-    //         this.order.items = _.without(this.order.items, id);
-    //     }
-    // }
 
-    // clearBasket() {
-    //     this.order.items.forEach(id => {
-    //         this.toggleOrderedLot(id, false);
-    //         this.catalog.find(it => it.id === id).clearBid();
-    //     });
-    // }
-
-    // getTotal() {
-    //     return this.order.items.reduce((a, c) => a + this.catalog.find(it => it.id === c).price, 0)
-    // }
 
     setCatalog(items: ICardItem[]) {
         this.catalog = items.map(item => new CardItem(item, this.events));

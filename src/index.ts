@@ -12,6 +12,10 @@ import { Modal } from './components/common/Modal';
 const events = new EventEmitter();
 const api = new LarekApi(CDN_URL, API_URL);
 
+// Чтобы мониторить все события, для отладки
+events.onAll(({ eventName, data }) => {
+	console.log(eventName, data);
+});
 // Шаблоны
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
@@ -43,6 +47,63 @@ events.on<CatalogChangeEvent>('cards:changed', () => {
 	// page.counter = appData.catalog.length;
 });
 
+// Отправить в превью карточку
+events.on('card:select', (item: CardItem) => {
+	appData.setPreview(item);
+});
+
+// Изменен открытый выбранный лот
+events.on('preview:changed', (item: CardItem) => {
+	// const showItem = (item: CardItem) => {
+	const card = new Card(cloneTemplate(cardPreviewTemplate));
+	// const auction = new Auction(cloneTemplate(auctionTemplate), {
+	// 		onSubmit: (price) => {
+	// 				item.placeBid(price);
+	// 				auction.render({
+	// 						status: item.status,
+	// 						time: item.timeStatus,
+	// 						label: item.auctionStatus,
+	// 						nextBid: item.nextBid,
+	// 						history: item.history
+	// 				});
+	// 		}
+	// });
+
+	modal.render({
+		content: card.render({
+			title: item.title,
+			image: item.image,
+			description: item.description,
+			price: item.price,
+			category: item.category,
+			// id: item.id
+			// description: item.description.split("\n"),
+			// status: auction.render({
+			// 		status: item.status,
+			// 		time: item.timeStatus,
+			// 		label: item.auctionStatus,
+			// 		nextBid: item.nextBid,
+			// 		history: item.history
+			// })
+		}),
+	});
+	// };
+	// showItem(item);
+	// 	if (item) {
+	// 		api.getLotItem(item.id)
+	// 				.then((result) => {
+	// 						item.description = result.description;
+	// 						item.history = result.history;
+	// 						showItem(item);
+	// 				})
+	// 				.catch((err) => {
+	// 						console.error(err);
+	// 				})
+	// } else {
+	// 		modal.close();
+	// }
+});
+
 events.on('modal:open', () => {
 	page.locked = true;
 });
@@ -52,7 +113,7 @@ events.on('modal:close', () => {
 });
 
 api
-	.getLotList()
+	.getCardList()
 	.then(appData.setCatalog.bind(appData))
 	.catch((err) => {
 		console.error(err);

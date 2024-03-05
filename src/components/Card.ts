@@ -17,7 +17,7 @@ interface ICardActions {
 export class Card extends Component<ICardItem> {
 	protected _title: HTMLElement;
 	protected _image: HTMLImageElement;
-	// protected _description?: HTMLElement;
+	protected _description?: HTMLElement;
 	protected _button: HTMLButtonElement;
 	protected _category: HTMLSpanElement;
 	protected _price: HTMLSpanElement;
@@ -27,13 +27,14 @@ export class Card extends Component<ICardItem> {
 
 		this._title = ensureElement<HTMLElement>(`.card__title`, container);
 		this._image = ensureElement<HTMLImageElement>(`.card__image`, container);
+		// this._description = ensureElement<HTMLElement>(`.card__text`, container);
 		this._button = container.querySelector(`.card__button`);
 		this._category = ensureElement<HTMLSpanElement>(
 			`.card__category`,
 			container
 		);
 		this._price = ensureElement<HTMLSpanElement>(`.card__price`, container);
-		// this._description = container.querySelector(`.card__description`);
+		this._description = container.querySelector(`.card__text`);
 
 		if (actions?.onClick) {
 			if (this._button) {
@@ -60,6 +61,14 @@ export class Card extends Component<ICardItem> {
 		return this._title.textContent || '';
 	}
 
+	set description(value: string) {
+		this.setText(this._description, value);
+	}
+
+	get description(): string {
+		return this._description.textContent || '';
+	}
+
 	set category(value: string) {
 		this.setText(this._category, value);
 		this.toggleClass(this._category, categoryMap.get(value), true);
@@ -70,7 +79,12 @@ export class Card extends Component<ICardItem> {
 	}
 
 	set price(value: string) {
-		this.setText(this._price, `${value} синапсов`);
+		if (value) {
+			this.setText(this._price, `${value} синапсов`);
+		} else {
+			this.setText(this._price, `Бесценно`);
+			this.setDisabled(this._button, true);
+		}
 	}
 
 	get price(): string {

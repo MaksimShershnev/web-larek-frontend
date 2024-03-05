@@ -11,6 +11,8 @@
 
 	&_full {
 		flex-direction: row;
+		padding: 48px 0;
+		gap: 48px;
 		background-color: transparent;
 
 		.card__title {
@@ -44,6 +46,10 @@
 		height: 390px;
 		aspect-ratio: 1;
 		margin: 3.75rem;
+
+		&_popup {
+			margin: 0;
+		}
 	}
 	&__title {
 		font-size: $titleFontSize;

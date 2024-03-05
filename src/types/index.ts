@@ -1,9 +1,10 @@
-export type Category =
-	| 'софт-скил'
-	| 'другое'
-	| 'дополнительное'
-	| 'кнопка'
-	| 'хард-скил';
+export enum Category {
+	'софт-скил',
+	'другое',
+	'дополнительное',
+	'кнопка',
+	'хард-скил',
+}
 
 export interface ICardItem {
 	id: string;

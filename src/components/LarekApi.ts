@@ -2,7 +2,7 @@ import { Api, ApiListResponse } from './base/api';
 import { IOrder, IOrderResult, ICardItem } from '../types';
 
 interface ILarekApi {
-	getLotList: () => Promise<ICardItem[]>;
+	getCardList: () => Promise<ICardItem[]>;
 }
 
 export class LarekApi extends Api implements ILarekApi {
@@ -13,7 +13,7 @@ export class LarekApi extends Api implements ILarekApi {
 		this.cdn = cdn;
 	}
 
-	getLotList(): Promise<ICardItem[]> {
+	getCardList(): Promise<ICardItem[]> {
 		return this.get('/product').then((data: ApiListResponse<ICardItem>) =>
 			data.items.map((item) => ({
 				...item,
