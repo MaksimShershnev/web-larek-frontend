@@ -4,10 +4,12 @@ import { API_URL, CDN_URL } from './utils/constants';
 import { LarekApi } from './components/LarekApi';
 import { EventEmitter } from './components/base/events';
 import { cloneTemplate, createElement, ensureElement } from './utils/utils';
-import { AppState, CatalogChangeEvent, CardItem } from './components/AppData';
+import { AppState, CatalogChangeEvent } from './components/AppData';
 import { Page } from './components/Page';
-import { Card } from './components/Card';
+import { Card, BasketItem } from './components/Card';
 import { Modal } from './components/common/Modal';
+import { Basket } from './components/common/Basket';
+import { ICardItem } from './types';
 
 const events = new EventEmitter();
 const api = new LarekApi(CDN_URL, API_URL);
@@ -16,10 +18,12 @@ const api = new LarekApi(CDN_URL, API_URL);
 events.onAll(({ eventName, data }) => {
 	console.log(eventName, data);
 });
+
 // Шаблоны
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
+const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 
 // Модель данных приложения
 const appData = new AppState({}, events);
@@ -27,6 +31,8 @@ const appData = new AppState({}, events);
 // Глобальные контейнеры
 const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
+
+const basket = new Basket(cloneTemplate(basketTemplate), events);
 
 // Изменились элементы каталога
 events.on<CatalogChangeEvent>('cards:changed', () => {
@@ -48,26 +54,17 @@ events.on<CatalogChangeEvent>('cards:changed', () => {
 });
 
 // Отправить в превью карточку
-events.on('card:select', (item: CardItem) => {
+events.on('card:select', (item: ICardItem) => {
 	appData.setPreview(item);
 });
 
 // Изменен открытый выбранный лот
-events.on('preview:changed', (item: CardItem) => {
-	// const showItem = (item: CardItem) => {
-	const card = new Card(cloneTemplate(cardPreviewTemplate));
-	// const auction = new Auction(cloneTemplate(auctionTemplate), {
-	// 		onSubmit: (price) => {
-	// 				item.placeBid(price);
-	// 				auction.render({
-	// 						status: item.status,
-	// 						time: item.timeStatus,
-	// 						label: item.auctionStatus,
-	// 						nextBid: item.nextBid,
-	// 						history: item.history
-	// 				});
-	// 		}
-	// });
+events.on('preview:changed', (item: ICardItem) => {
+	const card = new Card(cloneTemplate(cardPreviewTemplate), {
+		onClick: () => {
+			events.emit('card:toBasket', item);
+		},
+	});
 
 	modal.render({
 		content: card.render({
@@ -76,32 +73,41 @@ events.on('preview:changed', (item: CardItem) => {
 			description: item.description,
 			price: item.price,
 			category: item.category,
-			// id: item.id
-			// description: item.description.split("\n"),
-			// status: auction.render({
-			// 		status: item.status,
-			// 		time: item.timeStatus,
-			// 		label: item.auctionStatus,
-			// 		nextBid: item.nextBid,
-			// 		history: item.history
-			// })
 		}),
 	});
-	// };
-	// showItem(item);
-	// 	if (item) {
-	// 		api.getLotItem(item.id)
-	// 				.then((result) => {
-	// 						item.description = result.description;
-	// 						item.history = result.history;
-	// 						showItem(item);
-	// 				})
-	// 				.catch((err) => {
-	// 						console.error(err);
-	// 				})
-	// } else {
-	// 		modal.close();
-	// }
+});
+
+events.on('card:toBasket', (item: ICardItem) => {
+	appData.addCardToOrder(item);
+});
+
+events.on('card:fromBasket', (item: ICardItem) => {
+	appData.deleteCardFromOrder(item);
+});
+
+events.on('basket:changed', () => {
+	page.counter = appData.getCardsInOrder().length;
+	basket.items = appData.getCardsInOrder().map((item) => {
+		const basketItem = new BasketItem(cloneTemplate(cardBasketTemplate), {
+			onClick: () => {
+				events.emit('card:fromBasket', item);
+			},
+		});
+
+		basketItem.index = appData.getBasketItemIndex(item);
+		return basketItem.render({
+			title: item.title,
+			price: item.price,
+		});
+	});
+	basket.total = appData.getTotal();
+});
+
+// Открыть корзину
+events.on('basket:open', () => {
+	modal.render({
+		content: basket.render(),
+	});
 });
 
 events.on('modal:open', () => {

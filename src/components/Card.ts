@@ -26,13 +26,10 @@ export class Card extends Component<ICardItem> {
 		super(container);
 
 		this._title = ensureElement<HTMLElement>(`.card__title`, container);
-		this._image = ensureElement<HTMLImageElement>(`.card__image`, container);
+		this._image = container.querySelector(`.card__image`);
 		// this._description = ensureElement<HTMLElement>(`.card__text`, container);
 		this._button = container.querySelector(`.card__button`);
-		this._category = ensureElement<HTMLSpanElement>(
-			`.card__category`,
-			container
-		);
+		this._category = container.querySelector(`.card__category`);
 		this._price = ensureElement<HTMLSpanElement>(`.card__price`, container);
 		this._description = container.querySelector(`.card__text`);
 
@@ -44,6 +41,10 @@ export class Card extends Component<ICardItem> {
 			}
 		}
 	}
+
+	// set buttonName(value: string) {
+	// 	this.setText(this._button, value);
+	// }
 
 	set id(value: string) {
 		this.container.dataset.id = value;
@@ -105,6 +106,68 @@ export class Card extends Component<ICardItem> {
 	//     } else {
 	//         this.setText(this._description, value);
 	//     }
+	// }
+}
+// interface IBasketItem {
+// 	id: string;
+// 	title: string;
+// 	price: number | null;
+// }
+
+export class BasketItem extends Card {
+	protected _index: HTMLElement;
+	protected _title: HTMLElement;
+	protected _price: HTMLElement;
+	protected _deleteButton: HTMLElement;
+
+	constructor(container: HTMLElement, actions?: ICardActions) {
+		super(container, actions);
+
+		this._index = ensureElement<HTMLElement>(
+			'.basket__item-index',
+			this.container
+		);
+		this._title = ensureElement<HTMLElement>('.card__title', this.container);
+		this._price = ensureElement<HTMLElement>('.card__price', this.container);
+		this._deleteButton = ensureElement<HTMLElement>(
+			'.basket__item-delete',
+			this.container
+		);
+
+		// if (this._deleteButton) {
+		// 	this._button.addEventListener('click', () => {
+		// 		console.log('item удален');
+		// 		events.emit('basket:changed');
+		// 	});
+		// }
+	}
+
+	set index(index: number) {
+		this.setText(this._index, index);
+	}
+
+	// get index(): string {
+	// 	return this._index.textContent || '';
+	// }
+
+	//   set id(value: string) {
+	//       this.container.dataset.id = value;
+	//   }
+
+	//   get id(): string {
+	//       return this.container.dataset.id || '';
+	//   }
+
+	// set title(value: string) {
+	// 	this.setText(this._title, value);
+	// }
+
+	// get title(): string {
+	// 	return this._title.textContent || '';
+	// }
+
+	// set price(value: string) {
+	// 	this.setText(this._price, `${value} синапсов`);
 	// }
 }
 

@@ -13,6 +13,8 @@ export interface ICardItem {
 	image?: string;
 	category?: Category;
 	price: number | null;
+	index?: number;
+	// isInBasket?: boolean;
 	// deleteCard:(id: string) => void;
 	// addCard: (id: string) => void;
 }
@@ -22,12 +24,10 @@ export interface ICardList {
 	items: ICardItem[];
 }
 
-export type IBasketItem = Pick<ICardItem, 'id' | 'title' | 'price'>;
-
-export interface IBasket {
-	items: IBasketItem[];
-	total: number;
-}
+// export interface IBasket {
+// 	items: IBasketItem[];
+// 	total: number;
+// }
 
 export interface IOrderContacts {
 	email: string;
@@ -49,7 +49,7 @@ export interface IOrderResult {
 export type FormErrors = Partial<Record<keyof IOrder, string>>;
 
 export interface IAppState {
-	basket: string[];
+	// basket: string[];
 	catalog: ICardItem[];
 	preview: string | null;
 	order: IOrder | null;
