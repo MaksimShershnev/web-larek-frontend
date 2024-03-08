@@ -20,6 +20,10 @@
 		}
 	}
 
+	&__button {
+		min-width: 180px;
+	}
+
 	&_compact {
 		flex-direction: row;
 		background-color: transparent;

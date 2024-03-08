@@ -14,6 +14,7 @@ export interface ICardItem {
 	category?: Category;
 	price: number | null;
 	index?: number;
+	buttonName?: string;
 	// isInBasket?: boolean;
 	// deleteCard:(id: string) => void;
 	// addCard: (id: string) => void;
@@ -34,9 +35,12 @@ export interface IOrderContacts {
 	phone: string;
 }
 
-export interface IOrder extends IOrderContacts {
-	payment: 'online' | 'offline';
+export interface IOrderPayments {
+	payment: 'online' | 'cash';
 	address: string;
+}
+
+export interface IOrder extends IOrderContacts, IOrderPayments {
 	total: number;
 	items: string[];
 }

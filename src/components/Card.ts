@@ -42,9 +42,9 @@ export class Card extends Component<ICardItem> {
 		}
 	}
 
-	// set buttonName(value: string) {
-	// 	this.setText(this._button, value);
-	// }
+	set buttonName(value: string) {
+		this.setText(this._button, value);
+	}
 
 	set id(value: string) {
 		this.container.dataset.id = value;
