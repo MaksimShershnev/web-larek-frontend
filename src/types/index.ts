@@ -15,9 +15,6 @@ export interface ICardItem {
 	price: number | null;
 	index?: number;
 	buttonName?: string;
-	// isInBasket?: boolean;
-	// deleteCard:(id: string) => void;
-	// addCard: (id: string) => void;
 }
 
 export interface ICardList {
@@ -25,18 +22,13 @@ export interface ICardList {
 	items: ICardItem[];
 }
 
-// export interface IBasket {
-// 	items: IBasketItem[];
-// 	total: number;
-// }
-
 export interface IOrderContacts {
 	email: string;
 	phone: string;
 }
 
 export interface IOrderPayments {
-	payment: 'online' | 'cash';
+	payment: string;
 	address: string;
 }
 
@@ -53,7 +45,6 @@ export interface IOrderResult {
 export type FormErrors = Partial<Record<keyof IOrder, string>>;
 
 export interface IAppState {
-	// basket: string[];
 	catalog: ICardItem[];
 	preview: string | null;
 	order: IOrder | null;

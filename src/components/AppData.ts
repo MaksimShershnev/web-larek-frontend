@@ -1,15 +1,5 @@
-// import _ from "lodash";
-// import {dayjs, formatNumber} from "../utils/utils";
-
 import { Model } from './base/Model';
-import {
-	FormErrors,
-	IAppState,
-	ICardItem,
-	IOrder,
-	IOrderContacts,
-	Category,
-} from '../types';
+import { FormErrors, IAppState, ICardItem, IOrder, Category } from '../types';
 
 export type CatalogChangeEvent = {
 	catalog: CardItem[];
@@ -25,20 +15,25 @@ export class CardItem extends Model<ICardItem> {
 }
 
 export class AppState extends Model<IAppState> {
-	// basket: string[] = [];
 	catalog: ICardItem[];
-	cardIndex: number = 0;
-	// loading: boolean;
 	order: IOrder = {
 		email: '',
 		phone: '',
-		payment: 'online',
+		payment: '',
 		address: '',
 		total: 0,
 		items: [],
 	};
 	preview: string | null;
 	formErrors: FormErrors = {};
+
+	setOrderPayment(value: string) {
+		if (this.order.payment !== value) this.order.payment = value;
+	}
+
+	setOrderAddress(value: string) {
+		this.order.address = value;
+	}
 
 	setCatalog(items: ICardItem[]) {
 		this.catalog = items.map((item) => new CardItem(item, this.events));
@@ -85,31 +80,53 @@ export class AppState extends Model<IAppState> {
 		return;
 	}
 
+	clearBasket() {
+		this.order = {
+			email: '',
+			phone: '',
+			payment: '',
+			address: '',
+			total: 0,
+			items: [],
+		};
+	}
+
 	getTotal() {
-		return this.order.items.reduce(
+		this.order.total = this.order.items.reduce(
 			(a, c) => a + this.catalog.find((it) => it.id === c).price,
 			0
 		);
+		return this.order.total;
 	}
 
-	// setOrderField(field: keyof IOrderContacts, value: string) {
-	//     this.order[field] = value;
+	setOrderField(
+		field: keyof Pick<IOrder, 'address' | 'phone' | 'email'>,
+		value: string
+	) {
+		this.order[field] = value;
+		this.validateOrder();
+	}
 
-	//     if (this.validateOrder()) {
-	//         this.events.emit('order:ready', this.order);
-	//     }
-	// }
+	validateOrder() {
+		const errors: typeof this.formErrors = {};
+		if (!this.order.email) {
+			errors.email = 'Необходимо указать email';
+		}
 
-	// validateOrder() {
-	//     const errors: typeof this.formErrors = {};
-	//     if (!this.order.email) {
-	//         errors.email = 'Необходимо указать email';
-	//     }
-	//     if (!this.order.phone) {
-	//         errors.phone = 'Необходимо указать телефон';
-	//     }
-	//     this.formErrors = errors;
-	//     this.events.emit('formErrors:change', this.formErrors);
-	//     return Object.keys(errors).length === 0;
-	// }
+		if (!this.order.phone) {
+			errors.phone = 'Необходимо указать телефон';
+		}
+
+		if (!this.order.address) {
+			errors.address = 'Необходимо указать адрес доставки';
+		}
+
+		if (!this.order.payment) {
+			errors.payment = 'Необходимо указать способ оплаты';
+		}
+
+		this.formErrors = errors;
+		this.events.emit('formErrors:change', this.formErrors);
+		return Object.keys(errors).length === 0;
+	}
 }

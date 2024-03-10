@@ -3,14 +3,15 @@ import './scss/styles.scss';
 import { API_URL, CDN_URL } from './utils/constants';
 import { LarekApi } from './components/LarekApi';
 import { EventEmitter } from './components/base/events';
-import { cloneTemplate, createElement, ensureElement } from './utils/utils';
+import { cloneTemplate, ensureElement } from './utils/utils';
 import { AppState, CatalogChangeEvent } from './components/AppData';
 import { Page } from './components/Page';
 import { Card, BasketItem } from './components/Card';
 import { Modal } from './components/common/Modal';
 import { Basket } from './components/common/Basket';
-import { ICardItem } from './types';
-import { Order } from './components/Order';
+import { ICardItem, IOrderPayments, IOrderContacts, IOrder } from './types';
+import { OrderPayments, OrderContacts } from './components/Order';
+import { Success } from './components/common/Success';
 
 const events = new EventEmitter();
 const api = new LarekApi(CDN_URL, API_URL);
@@ -25,7 +26,9 @@ const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
-const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
+const OrderPaymentsTemplate = ensureElement<HTMLTemplateElement>('#order');
+const OrderContactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
+const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 // Модель данных приложения
 const appData = new AppState({}, events);
@@ -35,7 +38,14 @@ const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 
 const basket = new Basket(cloneTemplate(basketTemplate), events);
-const order = new Order(cloneTemplate(orderTemplate), events);
+const orderPayments = new OrderPayments(
+	cloneTemplate(OrderPaymentsTemplate),
+	events
+);
+const orderContacts = new OrderContacts(
+	cloneTemplate(OrderContactsTemplate),
+	events
+);
 
 // Изменились элементы каталога
 events.on<CatalogChangeEvent>('cards:changed', () => {
@@ -114,13 +124,84 @@ events.on('basket:open', () => {
 
 // Открыть форму заказа
 events.on('order:open', () => {
+	orderPayments.cancelPayment();
 	modal.render({
-		content: order.render({
+		content: orderPayments.render({
 			address: '',
 			valid: false,
 			errors: [],
 		}),
 	});
+});
+
+// Переключение вида оплаты товара
+events.on(
+	'order:change payment',
+	(data: { payment: string; button: HTMLElement }) => {
+		appData.setOrderPayment(data.payment);
+		orderPayments.togglePayment(data.button);
+		appData.validateOrder();
+	}
+);
+
+// Открытие формы контактов заказа
+events.on('order:submit', () => {
+	modal.render({
+		content: orderContacts.render({
+			email: '',
+			phone: '',
+			valid: false,
+			errors: [],
+		}),
+	});
+});
+
+// Отправлена форма заказа
+events.on('contacts:submit', () => {
+	api
+		.orderProducts(appData.order)
+		.then((result) => {
+			const success = new Success(cloneTemplate(successTemplate), {
+				onClick: () => {
+					modal.close();
+				},
+			});
+			modal.render({
+				content: success.render({
+					total: result.total,
+				}),
+			});
+
+			appData.clearBasket();
+			events.emit('basket:changed');
+		})
+		.catch((err) => {
+			console.error(err);
+		});
+});
+
+// Изменилось одно из полей input
+events.on(
+	/^order\..*:change/,
+	(data: {
+		field: keyof Pick<IOrder, 'address' | 'phone' | 'email'>;
+		value: string;
+	}) => {
+		appData.setOrderField(data.field, data.value);
+	}
+);
+
+// Изменилось состояние валидации формы
+events.on('formErrors:change', (errors: Partial<IOrder>) => {
+	const { address, payment, phone, email } = errors;
+	orderPayments.valid = !payment && !address;
+	orderPayments.errors = Object.values({ payment, address })
+		.filter((i) => !!i)
+		.join('; ');
+	orderContacts.valid = !phone && !email;
+	orderContacts.errors = Object.values({ phone, email })
+		.filter((i) => !!i)
+		.join('; ');
 });
 
 events.on('modal:open', () => {
