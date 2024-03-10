@@ -47,7 +47,7 @@ export class AppState extends Model<IAppState> {
 
 	setButtonText(item: ICardItem) {
 		if (this.order.items.some((id) => id === item.id)) {
-			return 'Удалить';
+			return 'Убрать';
 		} else return 'В корзину';
 	}
 

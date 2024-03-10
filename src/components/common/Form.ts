@@ -38,7 +38,6 @@ export class Form<T> extends Component<IFormState> {
 			field,
 			value,
 		});
-		console.log(`${this.container.name}.${String(field)}`);
 	}
 
 	set valid(value: boolean) {
