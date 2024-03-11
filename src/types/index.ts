@@ -13,7 +13,6 @@ export interface ICardItem {
 	image?: string;
 	category?: Category;
 	price: number | null;
-	index?: number;
 	buttonName?: string;
 }
 

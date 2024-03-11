@@ -9,7 +9,7 @@ import { Page } from './components/Page';
 import { Card, BasketItem } from './components/Card';
 import { Modal } from './components/common/Modal';
 import { Basket } from './components/common/Basket';
-import { ICardItem, IOrderPayments, IOrderContacts, IOrder } from './types';
+import { ICardItem, IOrder } from './types';
 import { OrderPayments, OrderContacts } from './components/Order';
 import { Success } from './components/common/Success';
 

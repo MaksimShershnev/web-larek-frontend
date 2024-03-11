@@ -34,6 +34,11 @@ export class OrderPayments extends Form<IOrderPayments> {
 		}
 	}
 
+	set address(value: string) {
+		(this.container.elements.namedItem('address') as HTMLInputElement).value =
+			value;
+	}
+
 	togglePayment(value: HTMLElement) {
 		this.cancelPayment();
 		this.toggleClass(value, 'button_alt-active', true);
@@ -42,11 +47,6 @@ export class OrderPayments extends Form<IOrderPayments> {
 	cancelPayment() {
 		this.toggleClass(this._cardButton, 'button_alt-active', false);
 		this.toggleClass(this._cashButton, 'button_alt-active', false);
-	}
-
-	set address(value: string) {
-		(this.container.elements.namedItem('address') as HTMLInputElement).value =
-			value;
 	}
 }
 

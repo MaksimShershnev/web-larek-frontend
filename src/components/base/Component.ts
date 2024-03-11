@@ -1,5 +1,3 @@
-import { IEvents } from './events';
-
 export abstract class Component<T> {
 	protected constructor(protected readonly container: HTMLElement) {}
 
@@ -22,16 +20,6 @@ export abstract class Component<T> {
 			else element.removeAttribute('disabled');
 		}
 	}
-
-	// Скрыть
-	// protected setHidden(element: HTMLElement) {
-	//     element.style.display = 'none';
-	// }
-
-	// Показать
-	// protected setVisible(element: HTMLElement) {
-	//     element.style.removeProperty('display');
-	// }
 
 	// Установить изображение с алтернативным текстом
 	protected setImage(element: HTMLImageElement, src: string, alt?: string) {
