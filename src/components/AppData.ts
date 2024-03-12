@@ -1,21 +1,13 @@
 import { Model } from './base/Model';
-import { FormErrors, IAppState, ICardItem, IOrder, Category } from '../types';
+import { FormErrors, IAppState, ICardItem, IOrder } from '../types';
 
 export type CatalogChangeEvent = {
-	catalog: CardItem[];
+	catalog: ICardItem[];
 };
 
-export class CardItem extends Model<ICardItem> {
-	id: string;
-	title: string;
-	description: string;
-	image: string;
-	category: Category;
-	price: number | null;
-}
-
 export class AppState extends Model<IAppState> {
-	catalog: ICardItem[];
+	catalog: ICardItem[] = [];
+	basket: ICardItem[] = [];
 	order: IOrder = {
 		email: '',
 		phone: '',
@@ -36,7 +28,7 @@ export class AppState extends Model<IAppState> {
 	}
 
 	setCatalog(items: ICardItem[]) {
-		this.catalog = items.map((item) => new CardItem(item, this.events));
+		items.map((item) => (this.catalog = [...this.catalog, item]));
 		this.emitChanges('cards:changed', { catalog: this.catalog });
 	}
 
@@ -46,38 +38,41 @@ export class AppState extends Model<IAppState> {
 	}
 
 	setButtonText(item: ICardItem) {
-		if (this.order.items.some((id) => id === item.id)) {
+		if (this.basket.some((card) => card.id === item.id)) {
 			return 'Убрать';
 		} else return 'В корзину';
 	}
 
-	getCardsInOrder(): ICardItem[] {
-		let array: ICardItem[] = [];
-		this.order.items.forEach((id) => {
-			array.push(this.catalog.find((item) => item.id === id));
-		});
-		return array;
+	getCardsInBasket(): ICardItem[] {
+		return this.basket;
 	}
 
 	getBasketItemIndex(item: ICardItem): number {
-		return this.order.items.indexOf(item.id) + 1;
+		return this.basket.indexOf(item) + 1;
 	}
 
-	toggleCardOrder(item: ICardItem) {
-		if (!this.order.items.some((id) => id === item.id)) {
-			this.order.items = [...this.order.items, item.id];
+	toggleCardInBasket(item: ICardItem) {
+		if (!this.basket.some((card) => card.id === item.id)) {
+			this.basket = [...this.basket, item];
 			this.emitChanges('basket:changed');
 		} else {
-			this.deleteCardFromOrder(item);
+			this.deleteCardFromBasket(item);
 		}
 	}
 
-	deleteCardFromOrder(item: ICardItem) {
-		if (this.order.items.some((id) => id === item.id)) {
-			this.order.items = this.order.items.filter((id) => item.id !== id);
+	deleteCardFromBasket(item: ICardItem) {
+		if (this.basket.some((card) => card.id === item.id)) {
+			this.basket = this.basket.filter((card) => item.id !== card.id);
 			this.emitChanges('basket:changed');
 		}
 		return;
+	}
+
+	sendCardsInOrder() {
+		this.basket.forEach(
+			(card) => (this.order.items = [...this.order.items, card.id])
+		);
+		this.order.total = this.getTotal();
 	}
 
 	clearBasket() {
@@ -89,14 +84,14 @@ export class AppState extends Model<IAppState> {
 			total: 0,
 			items: [],
 		};
+		this.basket = [];
+		this.emitChanges('basket:changed');
 	}
 
 	getTotal() {
-		this.order.total = this.order.items.reduce(
-			(a, c) => a + this.catalog.find((it) => it.id === c).price,
-			0
-		);
-		return this.order.total;
+		let total = 0;
+		this.basket.forEach((card) => (total += card.price));
+		return total;
 	}
 
 	setOrderField(

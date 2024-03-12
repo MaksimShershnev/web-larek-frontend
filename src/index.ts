@@ -10,16 +10,12 @@ import { Card, BasketItem } from './components/Card';
 import { Modal } from './components/common/Modal';
 import { Basket } from './components/common/Basket';
 import { ICardItem, IOrder } from './types';
-import { OrderPayments, OrderContacts } from './components/Order';
+import { OrderContacts } from './components/OrderContacts';
+import { OrderPayments } from './components/OrderPayments';
 import { Success } from './components/common/Success';
 
 const events = new EventEmitter();
 const api = new LarekApi(CDN_URL, API_URL);
-
-// Чтобы мониторить все события, для отладки
-events.onAll(({ eventName, data }) => {
-	console.log(eventName, data);
-});
 
 // Шаблоны
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
@@ -36,7 +32,6 @@ const appData = new AppState({}, events);
 // Глобальные контейнеры
 const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
-
 const basket = new Basket(cloneTemplate(basketTemplate), events);
 const orderPayments = new OrderPayments(
 	cloneTemplate(OrderPaymentsTemplate),
@@ -68,7 +63,7 @@ events.on('card:select', (item: ICardItem) => {
 	appData.setPreview(item);
 });
 
-// Изменен открытый выбранный лот
+// Открылось превью карточки товара
 events.on('preview:changed', (item: ICardItem) => {
 	const card = new Card(cloneTemplate(cardPreviewTemplate), {
 		onClick: () => {
@@ -88,9 +83,10 @@ events.on('preview:changed', (item: ICardItem) => {
 	});
 });
 
+// Изменились товары в корзине
 events.on('basket:changed', () => {
-	page.counter = appData.getCardsInOrder().length;
-	basket.items = appData.getCardsInOrder().map((item) => {
+	page.counter = appData.getCardsInBasket().length;
+	basket.items = appData.getCardsInBasket().map((item) => {
 		const basketItem = new BasketItem(cloneTemplate(cardBasketTemplate), {
 			onClick: () => {
 				events.emit('card:fromBasket', item);
@@ -107,12 +103,14 @@ events.on('basket:changed', () => {
 	basket.total = appData.getTotal();
 });
 
+// Добавить в корзину
 events.on('card:toBasket', (item: ICardItem) => {
-	appData.toggleCardOrder(item);
+	appData.toggleCardInBasket(item);
 });
 
+// Удалить из корзины
 events.on('card:fromBasket', (item: ICardItem) => {
-	appData.deleteCardFromOrder(item);
+	appData.deleteCardFromBasket(item);
 });
 
 // Открыть корзину
@@ -158,6 +156,7 @@ events.on('order:submit', () => {
 
 // Отправлена форма заказа
 events.on('contacts:submit', () => {
+	appData.sendCardsInOrder();
 	api
 		.orderProducts(appData.order)
 		.then((result) => {
@@ -171,9 +170,7 @@ events.on('contacts:submit', () => {
 					total: result.total,
 				}),
 			});
-
 			appData.clearBasket();
-			events.emit('basket:changed');
 		})
 		.catch((err) => {
 			console.error(err);

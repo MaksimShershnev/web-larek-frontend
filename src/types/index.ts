@@ -44,6 +44,7 @@ export interface IOrderResult {
 export type FormErrors = Partial<Record<keyof IOrder, string>>;
 
 export interface IAppState {
+	basket: ICardItem[];
 	catalog: ICardItem[];
 	preview: string | null;
 	order: IOrder | null;
